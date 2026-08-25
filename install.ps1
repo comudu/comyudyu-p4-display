@@ -192,14 +192,21 @@ try {
     Write-Host "Next: plug the High-Speed connector (USB3) into the PC, then add"
     Write-Host "the screen in SimHub. Windows binds the driver by itself."
     Write-Host ""
-    # Explicit: without this the script inherits the exit code of the last
-    # native call, which is the deliberately-ignored reset. A successful
-    # install would report failure to anything checking $LASTEXITCODE.
-    exit 0
+    # The last native call was the reset, whose failure is deliberately
+    # ignored, so $LASTEXITCODE is still non-zero at this point. Clear it, or
+    # a successful install looks like a failure to anything checking after.
+    #
+    # Not `exit 0`: the documented way to run this is `irm ... | iex`, where
+    # the script shares the caller's scope and `exit` would close the user's
+    # PowerShell session.
+    $global:LASTEXITCODE = 0
 }
 catch {
     Write-Host ""
     Write-Host "FAILED: $_" -ForegroundColor Red
     Write-Host ""
-    exit 1
+    $global:LASTEXITCODE = 1
+    # Only bail out of the process when actually running as a script file;
+    # under `irm | iex` this would take the user's session down with it.
+    if ($PSCommandPath) { exit 1 }
 }
