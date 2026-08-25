@@ -192,6 +192,10 @@ try {
     Write-Host "Next: plug the High-Speed connector (USB3) into the PC, then add"
     Write-Host "the screen in SimHub. Windows binds the driver by itself."
     Write-Host ""
+    # Explicit: without this the script inherits the exit code of the last
+    # native call, which is the deliberately-ignored reset. A successful
+    # install would report failure to anything checking $LASTEXITCODE.
+    exit 0
 }
 catch {
     Write-Host ""
